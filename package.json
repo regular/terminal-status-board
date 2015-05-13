@@ -1,0 +1,31 @@
+{
+  "name": "terminal-status-board",
+  "version": "1.0.0",
+  "description": "display the progress of multiple concurrent job sequences in your terminel",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test/*"
+  },
+  "keywords": [
+    "terminal",
+    "parallel",
+    "sequence",
+    "progress",
+    "display",
+    "status"
+  ],
+  "author": "Jan Bölsche <jan@lagomorph.de> (http://regular.codes)",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/regular/terminal-status-board.git"
+  },
+  "bugs": {
+    "url": "https://github.com/regular/terminal-status-board/issues"
+  },
+  "homepage": "https://github.com/regular/terminal-status-board#readme",
+  "dependencies": {
+    "charm": "^1.0.0",
+    "progress-pipeline": "^1.1.0"
+  }
+}
