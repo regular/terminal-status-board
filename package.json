@@ -25,7 +25,8 @@
   },
   "homepage": "https://github.com/regular/terminal-status-board#readme",
   "dependencies": {
-    "charm": "^1.0.0",
-    "progress-pipeline": "^1.1.0"
+    "charm": "1.0.x",
+    "cli-cursor": "1.0.x",
+    "progress-pipeline": "1.2.x"
   }
 }
