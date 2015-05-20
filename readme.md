@@ -71,7 +71,7 @@ API
 
 The retunred object is a `Stream` that emits ANSI escape sequences to update the screen.
 Pipe it to `stdout` to make it visible in the terminal.
-The stream instance originate from [substack/charm](github.com/substack/charm).
+The stream instance originate from [substack/charm](http://github.com/substack/charm).
 
 Options are
   - `template`: a custom template function that renders a line of the board
@@ -93,7 +93,7 @@ Options are
 ### add( jobs[] or pipeline, [options or string] )
     
 Adds a line to the board, displaying the current state of a sequence of async jobs.
-Jobs can either be defined as an array of async functions, or as an instance of [regular/progress-pipeline](github.com/regular/progress-pipeline).
+Jobs can either be defined as an array of async functions, or as an instance of [regular/progress-pipeline](http://github.com/regular/progress-pipeline).
 
 Options are:
 
