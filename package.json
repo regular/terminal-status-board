@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/regular/terminal-status-board#readme",
   "dependencies": {
+    "chalk": "^1.0.0",
     "charm": "1.0.x",
     "cli-cursor": "1.0.x",
     "extend": "^2.0.1",

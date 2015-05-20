@@ -2,6 +2,7 @@ var cursor = require('cli-cursor');
 var extend = require('extend');
 var pipeline = require('progress-pipeline');
 var Charm = require('charm');
+var chalk = require('chalk');
 
 function makeJob(name, duration, err, result) {
     var f = function(cb) {
@@ -30,7 +31,9 @@ function board(options) {
     var charm = Charm();
     cursor.hide();
 
-    function update(id, line) {
+    function update(id, p, ctx) {
+        var t = p.options.template || options.template || template;
+        var line = t(ctx);
         charm
             .column(0)
             .move(0, id - currLine)
@@ -50,19 +53,19 @@ function board(options) {
 
     function template(ctx) {
         var name = ctx.name || '#' + (ctx._index + 1);
+        name = chalk[ctx.color || 'blue'](name);
         if (ctx._error) {
-            return name + ': '+ ctx._job.title + ' failed with error: ' + ctx._error.message; 
+            return chalk.red('\u2717') + ' ' + name + ': '+ ctx._job.title + chalk.red(' failed with error: ' + ctx._error.message);
         } 
         if (ctx._jobIndex + 1 === ctx._totalJobs) {
-            return name + ': done';
+            return chalk.green('\u2713') + ' ' + name;
         }
-        return name + ': '+ (ctx._jobIndex+1) + '/' + ctx._totalJobs + ' ' + ctx._job.title || 'job #' + ctx._jobIndex;
+        return '  ' + name + ': '+ (ctx._jobIndex+1) + '/' + ctx._totalJobs + ' ' + ctx._job.title || 'job #' + ctx._jobIndex;
     }
 
     function makeHandlers(p, id) {
         function contextFromEvent(ev) {
             return {
-                _charm: charm,
                 _job: ev.job,
                 _jobIndex: ev.jobIndex,
                 _totalJobs: ev.totalJobs
@@ -73,9 +76,8 @@ function board(options) {
                 _index: id,
                 _error: error
             };
-            extend(ctx, contextFromEvent(error), p.options.context || {});
-            var line = template(ctx);
-            update(id, line);
+            ctx = extend(p.options.context, ctx, contextFromEvent(error));
+            update(id, p, ctx);
             pipeEnds();
         });
         p.on('data', function(data) {
@@ -83,9 +85,8 @@ function board(options) {
                 _index: id,
                 _jobResult: data.result,
             };
-            extend(ctx, contextFromEvent(data), p.options.context || {});
-            var line = template(ctx);
-            update(id, line);
+            ctx = extend(p.options.context, ctx, contextFromEvent(data));
+            update(id, p, ctx);
 
             if (typeof data.result !== 'undefined') {
                 if (data.jobIndex + 1 === data.totalJobs) {
@@ -107,6 +108,7 @@ function board(options) {
             };
         }
         p.options = options || {};
+        p.options.context = p.options.context || {};
         var id = pipelines.push(p) - 1;
         console.log(p.name);
         makeHandlers(p, id);
@@ -120,8 +122,17 @@ function board(options) {
 
 board()
     .add(makeJobs(8), 'first')
-    .add(makeJobs(5), {context:{name: 'second'}})
-    .add(pipeline(makeJobs(20, true)))
-    .add(makeJobs(10, true), {context: {name: 'fourth', color:'red'}})
+    .add(makeJobs(8), {
+        template: function(ctx) {
+            if (ctx._jobIndex === ctx._totalJobs-1) return '  2nd: done';
+            return '-\\|/'[ctx._jobIndex%4] + ' 2nd';
+        }
+    })
+    .add(
+        pipeline(makeJobs(20, true)).on('error', function() {
+            process.stdout.write('\u0007');
+        })
+    )
+    .add(makeJobs(10, true), {context: {name: 'fourth', color:'yellow'}})
     .on('end', function() {console.log('ALL DONE');})
     .pipe(process.stdout);
