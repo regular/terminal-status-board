@@ -4,26 +4,7 @@ var pipeline = require('progress-pipeline');
 var Charm = require('charm');
 var chalk = require('chalk');
 
-function makeJob(name, duration, err, result) {
-    var f = function(cb) {
-        setTimeout(function() {cb(Math.random()>0.8?err:null, result);}, duration);
-    };
-    f.title = name;
-    return f;
-}
-
-function makeJobs(jobCount, fail) {
-    var jobs = [];
-    for(var i=0; i<jobCount; ++i) {
-        var duration = Math.floor(Math.random() * 4000);
-        var name = String.fromCharCode(65+i);
-        var result = name + ' done';
-        jobs.push(makeJob(name, duration, fail?new Error('this is bad!'):null, result));
-    }
-    return jobs;
-}
-
-function board(options) {
+module.exports = function board(options) {
     var pipelines = [];
     var currLine;
     var pending = 0;
@@ -96,6 +77,10 @@ function board(options) {
         });
     }
 
+    charm.on('end', function() {
+        cursor.show();
+    });
+
     charm.add = function(p, options) {
         if (p.length && typeof p[0] === 'function') {
             p = pipeline(p);
@@ -118,21 +103,5 @@ function board(options) {
     };
 
     return charm;
-} 
+};
 
-board()
-    .add(makeJobs(8), 'first')
-    .add(makeJobs(8), {
-        template: function(ctx) {
-            if (ctx._jobIndex === ctx._totalJobs-1) return '  2nd: done';
-            return '-\\|/'[ctx._jobIndex%4] + ' 2nd';
-        }
-    })
-    .add(
-        pipeline(makeJobs(20, true)).on('error', function() {
-            process.stdout.write('\u0007');
-        })
-    )
-    .add(makeJobs(10, true), {context: {name: 'fourth', color:'yellow'}})
-    .on('end', function() {console.log('ALL DONE');})
-    .pipe(process.stdout);
