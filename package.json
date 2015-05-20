@@ -29,6 +29,6 @@
     "charm": "1.0.x",
     "cli-cursor": "1.0.x",
     "extend": "^2.0.1",
-    "progress-pipeline": "1.3.x"
+    "progress-pipeline": "1.4.x"
   }
 }

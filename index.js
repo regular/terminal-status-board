@@ -14,7 +14,7 @@ function template(ctx) {
             ctx._error.message);
     } 
     if ( // the last job has finished
-        typeof ctx._jobResult !== 'undefined' &&
+        ctx._jobFinished &&
         ctx._jobIndex === ctx._totalJobs - 1
     ) {
         return chalk.green('\u2713') + ' ' + name;
@@ -57,6 +57,7 @@ module.exports = function board(options) {
             return {
                 _index: id,
                 _job: ev.job,
+                _jobFinished: ev.jobFinished,
                 _jobIndex: ev.jobIndex,
                 _totalJobs: ev.totalJobs
             };
@@ -65,6 +66,7 @@ module.exports = function board(options) {
             var ctx = extend(p.options.context, contextFromEvent(error));
             ctx._jobResult = undefined;
             ctx._error = error;
+            ctx._jobFinished = false;
             update(id, p, ctx);
             pipeEnds();
         });
@@ -74,7 +76,7 @@ module.exports = function board(options) {
             ctx._error = undefined;
             update(id, p, ctx);
 
-            if (typeof data.result !== 'undefined') {
+            if (data.jobFinished) {
                 if (data.jobIndex + 1 === data.totalJobs) {
                     pipeEnds();
                 }

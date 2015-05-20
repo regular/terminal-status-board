@@ -27,9 +27,9 @@ Advanced Usage
 var board = require('terminal-status-board');
 var pipeline = require('progress-pipeline');
 
-function makeJob(name, duration, err, result) {
+function makeJob(name, duration, err) {
     var f = function(cb) {
-        setTimeout(function() {cb(Math.random()>0.8?err:null, result);}, duration);
+        setTimeout(function() {cb(Math.random()>0.8?err:null);}, duration);
     };
     f.title = name;
     return f;
@@ -40,8 +40,7 @@ function makeJobs(jobCount, fail) {
     for(var i=0; i<jobCount; ++i) {
         var duration = Math.floor(Math.random() * 4000);
         var name = String.fromCharCode(65+i);
-        var result = name + ' done';
-        jobs.push(makeJob(name, duration, fail?new Error('this is bad!'):null, result));
+        jobs.push(makeJob(name, duration, fail?new Error('this is bad!'):null));
     }
     return jobs;
 }
@@ -50,7 +49,9 @@ board()
     .add(makeJobs(8), 'first')
     .add(makeJobs(8), {
         template: function(ctx) {
-            if (ctx._jobIndex === ctx._totalJobs-1) return '  2nd: done';
+            if (ctx._jobFinished && ctx._jobIndex === ctx._totalJobs-1) {
+                return '  2nd: done';
+            }
             return '-\\|/'[ctx._jobIndex % 4] + ' 2nd';
         }
     })
@@ -89,6 +90,7 @@ Options are
     - `_jobIndex`: zero-based index of current job
     - `_job`: the current job
     - `_jobResult`: result of the current job (when job has finished)
+    - `_jobFinished`: true, when job has just finished, false when it started
     - `_error`: error object returned by current job (when job has failed)
     - whatever additional properties you passed as `context` to `add()` (see below)
   

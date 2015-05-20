@@ -1,9 +1,9 @@
 var board = require('.');
 var pipeline = require('progress-pipeline');
 
-function makeJob(name, duration, err, result) {
+function makeJob(name, duration, err) {
     var f = function(cb) {
-        setTimeout(function() {cb(Math.random()>0.8?err:null, result);}, duration);
+        setTimeout(function() {cb(Math.random()>0.8?err:null);}, duration);
     };
     f.title = name;
     return f;
@@ -14,8 +14,7 @@ function makeJobs(jobCount, fail) {
     for(var i=0; i<jobCount; ++i) {
         var duration = Math.floor(Math.random() * 4000);
         var name = String.fromCharCode(65+i);
-        var result = name + ' done';
-        jobs.push(makeJob(name, duration, fail?new Error('this is bad!'):null, result));
+        jobs.push(makeJob(name, duration, fail?new Error('this is bad!'):null));
     }
     return jobs;
 }
@@ -25,7 +24,7 @@ board()
     .add(makeJobs(8), {
         template: function(ctx) {
             if (
-                typeof ctx._jobResult !== 'undefined' &&
+                ctx._jobFinished &&
                 ctx._jobIndex === ctx._totalJobs-1
             ) {
                 return '  2nd: done';
