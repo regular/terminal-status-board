@@ -73,9 +73,9 @@ API
 
 ### board([options])
 
-The retunred object is a `Stream` that emits ANSI escape sequences to update the screen.
+The returned object is a `Stream` that emits ANSI escape sequences to update the screen.
 Pipe it to `stdout` to make it visible in the terminal.
-The stream instance originate from [substack/node-charm](http://github.com/substack/node-charm).
+The stream instance originates from [substack/node-charm](http://github.com/substack/node-charm).
 
 Options are
   - `template`: a custom template function that renders a line of the board
