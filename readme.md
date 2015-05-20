@@ -18,7 +18,7 @@ board()
     .on('end', function() {console.log('ALL DONE');})
     .pipe(process.stdout);
 ```
-`asyncFunc1` and `asyncFunc2` run in sequence, so do `asyncFunc3` and `asyncFunc4`. These two sequences however, run in parallel. (think of airplanes changing their state from 'boarding' to 'borading complete' to 'departure').
+`asyncFunc1` and `asyncFunc2` run in sequence, so do `asyncFunc3` and `asyncFunc4`. These two sequences however, run in parallel. (think of airplanes changing status from 'boarding' to 'borading complete' to 'departure').
 
 Advanced Usage
 ---
