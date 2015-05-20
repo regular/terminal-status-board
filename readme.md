@@ -64,6 +64,10 @@ board()
     .pipe(process.stdout);
 ```
 
+This is the output of the above code:
+
+![demo output](http://regular.github.io/terminal-status-board/terminal-status-board.gif)
+
 API
 ---
 
