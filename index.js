@@ -4,6 +4,26 @@ var pipeline = require('progress-pipeline');
 var Charm = require('charm');
 var chalk = require('chalk');
 
+function template(ctx) {
+    var name = ctx.name || '#' + (ctx._index + 1);
+    name = chalk[ctx.color || 'blue'](name);
+    if (ctx._error) {
+        return chalk.red('\u2717') +
+            ' ' + name + ': '+ ctx._job.title +
+            chalk.red(' failed with error: ' +
+            ctx._error.message);
+    } 
+    if ( // the last job has finished
+        typeof ctx._jobResult !== 'undefined' &&
+        ctx._jobIndex === ctx._totalJobs - 1
+    ) {
+        return chalk.green('\u2713') + ' ' + name;
+    }
+    return '  ' + name + ': ' +
+        (ctx._jobIndex+1) + '/' + ctx._totalJobs + ' ' +
+        ctx._job.title || 'job #' + ctx._jobIndex;
+}
+
 module.exports = function board(options) {
     var pipelines = [];
     var currLine;
@@ -32,41 +52,26 @@ module.exports = function board(options) {
         }
     }
 
-    function template(ctx) {
-        var name = ctx.name || '#' + (ctx._index + 1);
-        name = chalk[ctx.color || 'blue'](name);
-        if (ctx._error) {
-            return chalk.red('\u2717') + ' ' + name + ': '+ ctx._job.title + chalk.red(' failed with error: ' + ctx._error.message);
-        } 
-        if (ctx._jobIndex + 1 === ctx._totalJobs) {
-            return chalk.green('\u2713') + ' ' + name;
-        }
-        return '  ' + name + ': '+ (ctx._jobIndex+1) + '/' + ctx._totalJobs + ' ' + ctx._job.title || 'job #' + ctx._jobIndex;
-    }
-
     function makeHandlers(p, id) {
         function contextFromEvent(ev) {
             return {
+                _index: id,
                 _job: ev.job,
                 _jobIndex: ev.jobIndex,
                 _totalJobs: ev.totalJobs
             };
         }
         p.on('error', function(error) {
-            var ctx = {
-                _index: id,
-                _error: error
-            };
-            ctx = extend(p.options.context, ctx, contextFromEvent(error));
+            var ctx = extend(p.options.context, contextFromEvent(error));
+            ctx._jobResult = undefined;
+            ctx._error = error;
             update(id, p, ctx);
             pipeEnds();
         });
         p.on('data', function(data) {
-            var ctx = {
-                _index: id,
-                _jobResult: data.result,
-            };
-            ctx = extend(p.options.context, ctx, contextFromEvent(data));
+            var ctx = extend(p.options.context, contextFromEvent(data));
+            ctx._jobResult = data.result;
+            ctx._error = undefined;
             update(id, p, ctx);
 
             if (typeof data.result !== 'undefined') {

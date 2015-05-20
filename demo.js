@@ -24,7 +24,12 @@ board()
     .add(makeJobs(8), 'first')
     .add(makeJobs(8), {
         template: function(ctx) {
-            if (ctx._jobIndex === ctx._totalJobs-1) return '  2nd: done';
+            if (
+                typeof ctx._jobResult !== 'undefined' &&
+                ctx._jobIndex === ctx._totalJobs-1
+            ) {
+                return '  2nd: done';
+            }
             return '-\\|/'[ctx._jobIndex % 4] + ' 2nd';
         }
     })
