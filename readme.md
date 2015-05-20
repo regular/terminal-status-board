@@ -71,7 +71,7 @@ API
 
 The retunred object is a `Stream` that emits ANSI escape sequences to update the screen.
 Pipe it to `stdout` to make it visible in the terminal.
-The stream instance originate from [substack/charm](http://github.com/substack/charm).
+The stream instance originate from [substack/node-charm](http://github.com/substack/node-charm).
 
 Options are
   - `template`: a custom template function that renders a line of the board
@@ -101,7 +101,7 @@ Options are:
 - `context`: additional properties that will be available to the template function.
   the default template cares about these additional properties:
   - name: the name of the sequence (think "flight number")
-  - color: Color of this line's name. One of `red`, `green`, `blue`, `yellow` ... (see [substack/charm](github.com/substack/charm) for details.
+  - color: Color of this line's name. One of `red`, `green`, `blue`, `yellow` ... (see [substack/node-charm](github.com/substack/node-charm) for details.
   
 If, as the second argument, a String is passed instead of an Object, it is treated as a shortcut for
 `{options: context: name: string}}`.
