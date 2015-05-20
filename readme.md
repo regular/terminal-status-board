@@ -1,6 +1,6 @@
 terminal-status-board
 ====
-display the progress of multiple concurrent job sequences in your terminel, kind of like the departure boards at airport terminals.
+display the progress of multiple concurrent job sequences in your terminal, kind of like the departure boards at airport terminals.
 
 Installation
 ---

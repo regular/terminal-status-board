@@ -1,7 +1,7 @@
 {
   "name": "terminal-status-board",
   "version": "1.1.0",
-  "description": "display the progress of multiple concurrent job sequences in your terminel",
+  "description": "display the progress of multiple concurrent job sequences in your terminal",
   "main": "index.js",
   "scripts": {
     "test": "tape test/*"
