@@ -1,6 +1,6 @@
 {
   "name": "terminal-status-board",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "display the progress of multiple concurrent job sequences in your terminal",
   "main": "index.js",
   "scripts": {
