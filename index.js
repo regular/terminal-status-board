@@ -10,7 +10,7 @@ function makeJob(name, duration, err, result) {
     return f;
 }
 
-function makePipeline(pname, jobCount, fail) {
+function makeJobs(jobCount, fail) {
     var jobs = [];
     for(var i=0; i<jobCount; ++i) {
         var duration = Math.floor(Math.random() * 4000);
@@ -18,9 +18,7 @@ function makePipeline(pname, jobCount, fail) {
         var result = name + ' done';
         jobs.push(makeJob(name, duration, fail?new Error('this is bad!'):null, result));
     }
-    var p = pipeline(jobs);
-    p.name = pname;
-    return p;
+    return jobs;
 }
 
 function board(options) {
@@ -49,27 +47,53 @@ function board(options) {
         }
     }
 
+    function template(error, index, ctx) {
+        if (error) {
+            return index + ' '+ error.message; 
+        } 
+        if (ctx.jobIndex + 1 === ctx.totalJobs) {
+            return index + ' done';
+        }
+        return index + ' '+ (ctx.jobIndex+1) + '/' + ctx.totalJobs + ' ' + ctx.name + ' ' + ctx.job.title;
+    }
     function makeHandlers(p, id) {
         p.on('error', function(error) {
-            var line = id + ' '+ error.message; 
+            var ctx = p.options.context;
+            var line = template(error, id, ctx);
             update(id, line);
             pipeEnds();
         });
         p.on('data', function(data) {
-            var line = id + ' '+ (data.jobIndex+1) + '/' + data.totalJobs + ' ' + p.name + ' ' + data.job.title;
-            var pipeEnded = false;
-            if (data.result) {
+
+            var ctx = p.options.context;
+            ctx.jobIndex = data.jobIndex;
+            ctx.job = data.job;
+            ctx.jobResult = data.result;
+            ctx.totalJobs = data.totalJobs;
+
+            var line = template(null, id, ctx);
+            update(id, line);
+
+            if (typeof data.result !== 'undefined') {
                 if (data.jobIndex + 1 === data.totalJobs) {
-                    line = id + ' done';
-                    pipeEnded = true; 
+                    pipeEnds();
                 }
             }
-            update(id, line);
-            if (pipeEnded) pipeEnds();
         });
     }
 
-    charm.addPipeline = function(p) {
+    charm.add = function(p, options) {
+        if (p.length && typeof p[0] === 'function') {
+            p = pipeline(p);
+        }
+        if (typeof options === 'string') {
+            options = {
+                context: {
+                    name: options
+                }
+            };
+        }
+        p.options = options || {};
         var id = pipelines.push(p) - 1;
         console.log(p.name);
         makeHandlers(p, id);
@@ -82,9 +106,9 @@ function board(options) {
 } 
 
 board()
-    .addPipeline(makePipeline('first', 8))
-    .addPipeline(makePipeline('second', 5))
-    .addPipeline(makePipeline('third', 20, true))
-    .addPipeline(makePipeline('fourth', 10, true))
+    .add(makeJobs(8), 'first')
+    .add(makeJobs(5), {context:{name: 'second'}})
+    .add(pipeline(makeJobs(20, true)), 'third')
+    .add(makeJobs(10, true), {context: {name: 'fourth', color:'red'}})
     .on('end', function() {console.log('ALL DONE');})
     .pipe(process.stdout);
