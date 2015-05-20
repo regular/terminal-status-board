@@ -1,4 +1,5 @@
 var cursor = require('cli-cursor');
+var extend = require('extend');
 var pipeline = require('progress-pipeline');
 var Charm = require('charm');
 
@@ -47,31 +48,43 @@ function board(options) {
         }
     }
 
-    function template(error, index, ctx) {
-        if (error) {
-            return index + ' '+ error.message; 
+    function template(ctx) {
+        var name = ctx.name || '#' + (ctx._index + 1);
+        if (ctx._error) {
+            return name + ': '+ ctx._job.title + ' failed with error: ' + ctx._error.message; 
         } 
-        if (ctx.jobIndex + 1 === ctx.totalJobs) {
-            return index + ' done';
+        if (ctx._jobIndex + 1 === ctx._totalJobs) {
+            return name + ': done';
         }
-        return index + ' '+ (ctx.jobIndex+1) + '/' + ctx.totalJobs + ' ' + ctx.name + ' ' + ctx.job.title;
+        return name + ': '+ (ctx._jobIndex+1) + '/' + ctx._totalJobs + ' ' + ctx._job.title || 'job #' + ctx._jobIndex;
     }
+
     function makeHandlers(p, id) {
+        function contextFromEvent(ev) {
+            return {
+                _charm: charm,
+                _job: ev.job,
+                _jobIndex: ev.jobIndex,
+                _totalJobs: ev.totalJobs
+            };
+        }
         p.on('error', function(error) {
-            var ctx = p.options.context;
-            var line = template(error, id, ctx);
+            var ctx = {
+                _index: id,
+                _error: error
+            };
+            extend(ctx, contextFromEvent(error), p.options.context || {});
+            var line = template(ctx);
             update(id, line);
             pipeEnds();
         });
         p.on('data', function(data) {
-
-            var ctx = p.options.context;
-            ctx.jobIndex = data.jobIndex;
-            ctx.job = data.job;
-            ctx.jobResult = data.result;
-            ctx.totalJobs = data.totalJobs;
-
-            var line = template(null, id, ctx);
+            var ctx = {
+                _index: id,
+                _jobResult: data.result,
+            };
+            extend(ctx, contextFromEvent(data), p.options.context || {});
+            var line = template(ctx);
             update(id, line);
 
             if (typeof data.result !== 'undefined') {
@@ -108,7 +121,7 @@ function board(options) {
 board()
     .add(makeJobs(8), 'first')
     .add(makeJobs(5), {context:{name: 'second'}})
-    .add(pipeline(makeJobs(20, true)), 'third')
+    .add(pipeline(makeJobs(20, true)))
     .add(makeJobs(10, true), {context: {name: 'fourth', color:'red'}})
     .on('end', function() {console.log('ALL DONE');})
     .pipe(process.stdout);
